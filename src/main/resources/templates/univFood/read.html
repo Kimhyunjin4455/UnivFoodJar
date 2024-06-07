@@ -1,0 +1,381 @@
+  <!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
+<th:block th:replace="~{/layout/basic :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <h1 class="mt-4"> 맛집 정보가 궁금하신가요!</h1>
+
+
+
+      <input type="hidden" name="page" th.value="${dto.uno}">
+<!--      <input type="hidden" name="page" th.value="${}">-->
+<!--      <input type="hidden" name="page" th.value="${}">-->
+
+    <div class="form-group">
+        <label>가게명</label>
+        <input type="text" class="form-control" name="restaurant" th:value="${dto.restaurantName}" readonly>
+    </div>
+
+    <div class="form-group">
+        <label>대표 메뉴</label>
+        <input type="text" class="form-control" name="restaurant" th:value="${dto.signatureMenu}" readonly>
+    </div>
+
+    <div class="form-group">
+      <label>리뷰 갯수</label>
+      <input type="text" class="form-control" name="restaurant" th:value="${dto.reviewCnt}" readonly>
+    </div>
+
+    <div class="form-group">
+      <label>평점</label>
+      <input type="text" class="form-control" name="restaurant" th:value="${dto.avg}" readonly>
+    </div>
+
+    <div class="form-group">
+      <label>위치</label>
+      <input type="text" class="form-control" name="restaurant" th:value="${dto.address}" readonly>
+    </div>
+
+    <div class="form-group">
+      <label>연락처</label>
+      <input type="text" class="form-control" name="restaurant" th:value="${dto.contact}" readonly>
+    </div>
+
+
+    <style>
+      .uploadResult {
+                width: 100%;
+                background-color: gray;
+                margin-top: 10px;
+            }
+            .uploadResult ul {
+                display: flex;
+                flex-flow: row;
+                justify-content: center;
+                align-items: center;
+                vertical-align: top;
+                overflow: auto;
+            }
+            .uploadResult ul li {
+                list-style: none;
+                padding: 10px;
+                margin-left: 2em;
+            }
+            .uploadResult ul li img {
+                width: 170px;
+                border-radius: 12%;
+            }
+    </style>
+
+    <div class="uploadResult">
+      <ul>
+        <li th:each="univFoodImage: ${dto.imageDTOList}" th:data-file="${univFoodImage.getThumbnailURL()}">
+          <img th:if="${univFoodImage.path != null}"
+               th:src="|/display?fileName=${univFoodImage.getThumbnailURL()}|">
+        </li>
+      </ul>
+    </div>
+
+
+<!-- 실제 식당 리뷰를 처리   -->
+    <div class="reviewModal modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">인근 맛집 추천</h5>
+            <button type="button" class="close replyClose" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+<!--            <div class="form-group">-->
+<!--              <label>글쓴이 ID</label>-->
+<!--              <input type="text" class="form-control" name="mid">-->
+<!--            </div>-->
+            <div class="form-group modifyGrade">
+              <label>수정할 별점: (미선택 후 수정 시 0점으로 처리됩니다.)<span class="grade"></span></label>
+              <div class="starrr"></div>
+            </div>
+            <div class="form-group addGrade">
+              <label>별점:<span class="grade"></span></label>
+              <div class="starrr"></div>
+            </div>
+            <div class="form-group">
+              <label>리뷰 내용</label>
+              <input type="text" class="form-control" name="text" placeholder="맛있어요!">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            <button type="button" class="btn btn-info reviewSaveBtn">저장</button>
+            <button type="button" class="btn btn-warning modifyBtn">수정</button>
+            <button type="button" class="btn btn-danger removeBtn">삭제</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--게시글 삭제시 최종 여부 물을 모달-->
+    <div class="deleteUnivFoodModal modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title">주의</h6>
+            <button type="button" class="close replyClose" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <h5 align="center">게시글을 정말 삭제하시겠습니까?</h5>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button"class="btn btn-danger"
+                      th:onclick="|location.href='@{/univFood/delete/{uno}(uno=${dto.uno})}'|">삭제</button>
+            </div>
+
+        </div>
+      </div>
+    </div>
+
+<!-- 이미지를 화면에 보여주는 용도   -->
+    <div class="imageModal modal" tabindex="-2" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">이미지</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script th:src="@{/js/starrr.js}"></script>
+    <link th:href="@{/css/starrr.css}" rel="stylesheet">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
+
+
+    <button type="button" class="btn btn-secondary" style="margin-right:7px;">
+      댓글 수<span class="badge badge-light">[[${dto.reviewCnt}]]</span>
+    </button>
+    <button type="button" class="btn btn-info addReviewBtn" style="margin-right:7px;">댓글 등록</button>
+    <button type="button" class="btn btn-primary" style="margin-right:7px;"
+            th:onclick="|location.href='@{/univFood/list}'|">메인으로</button>
+    <button type="button" class="btn btn-danger deleteUnivFoodBtn" style="margin-right:7px;">게시글 삭제</button>
+    <a th:href="@{/univFood/modify(uno=${dto.uno}, page=${requestDTO.page},
+            type=${requestDTO.type}, keyword=${requestDTO.keyword})}">
+      <button type="button" class="btn btn-warning">게시글 수정</button>
+    </a>
+
+
+
+
+
+
+    <div class="list-group reviewList"></div>
+
+    <script>
+      $(document).ready(function(e){
+        var grade = 0;
+        var uno = [[${dto.uno}]];
+        var modal = $('.modal');
+
+        $(".reviewModal .replyClose ").on("click", () => {
+            reviewModal.modal('hide');
+        });
+
+        $(".reviewModal .btn-secondary ").on("click", () => {
+            reviewModal.modal('hide');
+        });
+
+        $(".imageModal .close ").on("click", () => {
+            imageModal.modal('hide');
+        });
+
+        $(".imageModal .btn-secondary ").on("click", () => {
+            imageModal.modal('hide');
+        });
+
+        $(".deleteUnivFoodModal .replyClose ").on("click", () => {
+            deleteUnivFoodModal.modal('hide');
+        });
+
+        $('.starrr').starrr({
+                    rating: grade,
+                    change: function(e, value) {
+                        if(value) {
+                            console.log(value);
+                            grade = value;
+                        }
+                    }
+        });
+
+        //$(".reviewModal").modal("show");
+
+        var reviewModal = $(".reviewModal");
+        var inputMid = $('.input[name="mid"]');
+        var inputText = $('input[name="text"]');
+        var imageModal = $(".imageModal");
+        var deleteUnivFoodModal = $(".deleteUnivFoodModal");
+
+
+
+        $(".addReviewBtn").click(function(){
+          inputMid.val("");
+          inputText.val("");
+
+          $(".removeBtn, .modifyBtn").hide();
+          $(".modifyGrade").hide();
+          $(".reviewSaveBtn").show();
+
+          reviewModal.modal('show');
+        });
+
+
+        $('.deleteUnivFoodBtn').click(function(){
+          inputMid.val("");
+          inputText.val("");
+
+          deleteUnivFoodModal.modal('show');
+        });
+
+        $('.reviewSaveBtn').click(function(){
+
+          var data = {uno:uno, grade:grade, text:inputText.val(), mid: inputMid.val()};
+
+          console.log(data);
+
+          $.ajax({
+            url: '/reviews/'+uno,
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "text",
+            success: function(result) {
+              console.log("result: " + result);
+              self.location.reload()
+            }
+          });
+
+          reviewModal.modal('hide');
+        });
+
+        function getUnivFoodReviews(){
+          function formatTime(str){
+            var date = new Date(str);
+
+            return date.getFullYear() + '/' +
+              (date.getMonth() + 1) + '/' +
+              date.getDate() + ' ' +
+              date.getHours() + ':' +
+              date.getMinutes();
+          }
+
+          $.getJSON("/reviews/" + uno + "/all", function(arr) {
+            var str = "";
+
+            $.each(arr, function(idx, review) {
+              console.log(review);
+
+              str += '<br>'
+              str += '<div class="card-body" data-reviewnum=' + review.reviewnum + ' data-mid=' + review.mid + '>';
+              str += '<h5 class="card-title">' + review.text + ' <span>' + '<br>' + "별점:" +  review.grade + '</span></h5>';
+              str += '<h6 class="card-subtitle mb-2 text-muted">' + review.mid + '</h6>';
+              str += '<p class="card-text">' + formatTime(review.regDate) + '</p>';
+              str += '</div>';
+
+            });
+
+            $(".reviewList").html(str);
+
+          });
+
+        }
+
+        getUnivFoodReviews();
+
+        // 댓글 수정
+        var reviewnum;
+
+        $(".reviewList").on("click", ".card-body", function() {
+          $(".reviewSaveBtn, .addGrade").hide();
+          $(".removeBtn, .modifyBtn, .modifyGrade").show();
+
+
+          var targetReview = $(this);
+          reviewnum = targetReview.data("reviewnum");
+
+          console.log("reviewnum: " + reviewnum);
+          inputMid.val(targetReview.data("mid"));
+          inputText.val(targetReview.find('.card-title').clone().children().remove().end().text());
+
+          var grade = targetReview.find('.card-title span').html();
+          //$(".starrr a :nth-child("+grade+")").trigger('click');
+
+          $('.reviewModal').modal('show');
+        });
+
+        $(".modifyBtn").on("click", function() {
+          var data = {reviewnum: reviewnum, uno:uno, grade:grade, text:inputText.val(), mid:inputMid.val()};
+          console.log(data);
+          $.ajax({
+                    url:'/reviews/'+uno+"/"+reviewnum,
+                    type:"PUT",
+                    data:JSON.stringify(data),
+                    contentType:"application/json; charset=utf-8",
+                    dataType:"text",
+                    success: function(result) {
+                      console.log("result: " + result);
+                      self.location.reload();
+                    }
+          })
+          reviewModal.modal('hide');
+        });
+
+        $(".removeBtn").on("click", function() {
+                  var data = {reviewnum: reviewnum};
+                  console.log(data);
+
+                  $.ajax({
+                    url: '/reviews/'+uno+"/"+reviewnum,
+                    type: "DELETE",
+                    contentType: "application/json; charset=utf-8",
+                    dataType:"text",
+                    success: function(result) {
+                      console.log("result: " + result);
+                      self.location.reload();
+                    }
+                  })
+                  removeModal.modal('hide');
+        });
+
+        $(".uploadResult li").click(function(){
+          var file = $(this).data('file');
+          console.log(file);
+
+          $('.imageModal .modal-body').html("<img style='width:100%' src='/display?fileName="+file+"&size=1'>");
+
+          $(".imageModal").modal("show");
+        });
+
+
+
+      });
+    </script>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>

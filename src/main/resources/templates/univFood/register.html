@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
+<th:block th:replace="~{/layout/basic :: setContent(~{this::content})}">
+    <th:block th:fragment="content">
+        <h1 class="mt-4">인근 맛집을 추천해주세요!!</h1>
+        <form th:action="@{/univFood/register}" th:method="post">
+            <div class="form-group">
+                <label style="margin-bottom: 10px;">가게명</label>
+                <input type="text" class="form-control" name="restaurantName" placeholder="음식점 이름을 입력해주세요" style="margin-bottom: 10px;">
+            </div>
+
+            <div class="form-group">
+                <label style="margin-bottom: 10px;">대표 메뉴(또는 추천 메뉴)</label>
+                <input type="text" class="form-control" name="signatureMenu" placeholder="메뉴를 입력해주세요" style="margin-bottom: 10px;">
+            </div>
+
+            <div class="form-group">
+                <label style="margin-bottom: 10px;">연락처</label>
+                <input type="text" class="form-control" name="contact" placeholder="음식점의 연락처를 입력해주세요" style="margin-bottom: 10px;">
+            </div>
+
+            <div class="form-group">
+                <label style="margin-bottom: 10px;">위치</label>
+                <input type="text" class="form-control" name="address" placeholder="음식점의 위치를 입력해주세요" style="margin-bottom: 10px;">
+            </div>
+
+            <div class="form-group fileForm">
+                <label style="margin-bottom: 10px;">이미지 파일</label>
+                <div class="custom-file">
+                    <input type="file" class="form-control custom-file-input files" id="fileInput" multiple style="margin-bottom: 17px;">
+<!--                    <label class="custom-file-label" data-browse="Browse"></label>-->
+                </div>
+            </div>
+
+            <div class="box" style="margin-bottom: 10px;">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-bottom: 10px;">제출</button>
+        </form>
+
+        <style>
+            .uploadResult {
+                width: 100%;
+                background-color: gray;
+                margin-top: 10px;
+            }
+            .uploadResult ul {
+                display: flex;
+                flex-flow: row;
+                justify-content: center;
+                align-items: center;
+                vertical-align: top;
+                overflow: auto;
+            }
+            .uploadResult ul li {
+                list-style: none;
+                padding: 10px;
+                margin-left: 2em;
+            }
+            .uploadResult ul li img {
+                width: 170px;
+                border-radius: 12%;
+            }
+        </style>
+
+        <div class="uploadResult ">
+            <ul>
+
+            </ul>
+        </div>
+
+
+        <script>
+            $(document).ready(function(e){
+                var regex = new RegExp("(.*?)\.(exe|sh|zip|alz|tiff)$");  //불가능한 파일 확장자
+                var maxSize = 10485760;   //10MB가 최대크기
+
+                function checkExtension(fileName, fileSize){
+                    if(fileSize >= maxSize){
+                        alert("파일 사이즈 초과");
+                        return false;
+                    }
+
+                    if(regex.test(fileName)){
+                        alert("해당 종류의 파일은 업로드 할 수 없습니다.");
+                        return false;
+                    }
+                    return true;
+                }
+
+                //
+                function showResult(uploadResultArr){
+                    var uploadUL = $(".uploadResult ul");
+                    var str = "";
+
+                    // 각 이미지는 li태그로 구성(ImageDTO에 필요한 속성들을 구성하게 됨)
+                    // li 태그의 'data-' 속성들은 form 태그의 'submit'이 실행될 때 form태그의 내용으로 만들어 전송함
+                    $(uploadResultArr).each(function(i, obj){
+                        str += "<li data-name='" + obj.fileName + "' data-path='" + obj.folderPath + "' data-uuid='" + obj.uuid + "'>";
+                        str += "<div>";
+                        str += "<button type='button' data-file=\'" + obj.imageURL + "\' "
+                        str += "class='btn-warning btn-sm'>X</button><br>";
+                        str += "<img src='/display?fileName=" + obj.thumbnailURL + "'>";
+                        str += "</div>";
+                        str += "</li>";
+                    });
+                    uploadUL.append(str);
+                }
+
+                $(".uploadResult ").on("click", "li button", function(e){
+                    console.log("delete file");
+                    var targetFile = $(this).data("file");
+                    var targetLi = $(this).closest("li");
+
+                    $.ajax({
+                        url: '/removeFile',
+                        data: {fileName: targetFile},
+                        dataType: 'text',
+                        type: 'POST',
+                        success: function(result) {
+                             //alert(result);
+                             targetLi.remove();
+                        }
+                    }); // ajax
+                });
+
+
+                // register.html에서 파일 업로드를 하는 부분의 클래스는 custom-file-input 이므로 이를 이용하여 이벤트 처리
+                // 첨부파일 업로드하고 파일을 화면에 보여주는 부분도 같이 처리
+                // 별도의 버튼 없이 파일을 선택하면 자동으로 이루어지도록
+                $(".custom-file-input").on("change", function(){
+                    var fileName = $(this).val().split("\\").pop();
+                    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+
+                    var formData = new FormData();
+                    var inputFile = $(this);
+                    var files = inputFile[0].files;
+                    var appended = false;
+
+                    for(var i=0; i<files.length; i++){
+                        if(!checkExtension(files[i].name, files[i].size)){
+                            return false;
+                        }
+                        console.log(files[i]);
+                        formData.append("uploadFiles", files[i]);
+                        appended = true;
+                    }
+
+                    // don't upload
+                    if(!appended){return;}
+
+                    for(var value of formData.values()){
+                        console.log(value);
+                    }
+
+                    // 실제 업로드 부분
+                    $.ajax({
+                        url: '/uploadAjax',
+                        processData: false,
+                        contentType: false,
+                        data: formData,
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(result) {
+                            console.log(result);
+                            showResult(result); // 브라우저에서 이미지를 선택하면 파일들이 자동으로 업로드되고 화면에 보임
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(textStatus);
+                        }
+                    });
+
+                }); // end change event
+
+                $(".btn-primary").on("click", function(e) {
+                    e.preventDefault();
+
+                    var str = "";
+
+                    $(".uploadResult li").each(function(i, obj) {
+                        var target = $(obj);
+
+                        str += "<input type='hidden' name='imageDTOList[" + i + "].imgName' value='" + target.data('name') + "'>";
+                        str += "<input type='hidden' name='imageDTOList[" + i + "].path' value='" + target.data('path') + "'>";
+                        str += "<input type='hidden' name='imageDTOList[" + i + "].uuid' value='" + target.data('uuid') + "'>";
+
+                    });
+
+                    $(".box").html(str);
+
+                    $("form").submit();
+                });
+
+
+            }); // document ready
+        </script>
+
+    </th:block>
+
+</th:block>
+<head>
+    <meta charset="UTF-8" >
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>

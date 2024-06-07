@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+
+  <input name="uploadFiles" type="file" multiple>
+  <button class="uploadBtn">Upload</button>
+
+  <div class="uploadResult"></div> <!-- 업로드된 이미지를 보여주기 위함 -->
+
+  <script>
+      $('.uploadBtn').click(function(){                 // 화면에서 upload버튼 클릭하면
+          var formData = new FormData();                  // 폼데이터 생성하고
+          var inputFile = $("input[type='file']");
+          var files = inputFile[0].files;
+          for(var i=0; i<files.length; i++){
+              console.log(files[i]);
+              formData.append("uploadFiles", files[i]);   // 컨트롤러에 사용하는 uploadFiles 라는 이름으로 파일 데이터 추가
+          }
+
+        // 실제 업로드 부분
+        // upload Ajax
+        // 파일 업로드 위해 contentType 속성을 반드시 false로
+        // 파일 업로드는 multipart/form-data 타입을 사용하기 위한 용도
+        // 데이터타입은 json을 지정했지만, (현재 UploadController의 메서드는 어떠한 것도 변환하지 않음) -> 추후 수정 가능성
+          $.ajax({
+              url: '/uploadAjax',
+              processData: false,
+              contentType: false,
+              data: formData,
+              type: 'POST',
+              dataType: 'json',
+              success: function(result){
+                //console.log(result);
+                showUploadedImages(result);
+                // 나중에 회면 처리
+              },
+              error: function(jqXHR, textStatus, errorThrown){
+                  console.log(textStatus);
+              }
+
+          });
+          // $.ajax
+          // 브라우저의 처리가 완료된 후, 화면에서 파일을 선택하고 업로드 이후에 다시 브라우저를 통해 업로드된 파일을 조회 가능
+
+          // * 파일 삭제
+          // 1. 삭제 버튼 추가
+          // 2. 삭제 버튼과 이미지를 하나의 div로 묶기 -> 버튼과 이미지를 한번에 처리(요소 삭제)할 수 있도록
+
+          function showUploadedImages(arr){
+              console.log(arr);
+
+              var divArea = $(".uploadResult");
+
+              var str ="";
+
+              for(var i = 0; i < arr.length; i++){
+                  str += "<div>";
+                  str += "<img src='/display?fileName="+arr[i].thumbnailURL+"'>";
+                  str += "<button class='removeBtn' data-name='"+arr[i].imageURL+"'>삭제</button>";
+                  // data-name 은 커스텀 속성 (삭제해야 하는 파일의 이름을 알아내는 용도)
+                  str += "</div>";
+
+                  //divArea.append("<img src='/display?fileName="+arr[i].thumbnailURL+"'>");
+              }
+              divArea.append(str);
+          }
+      });
+
+      $(".uploadResult").on("click", ".removeBtn", function(e){
+          var target = $(this);
+          var fileName = target.data("name");
+          var targetDiv = $(this).closest("div");
+
+          console.log(fileName);
+
+          $.post('/removeFile', {fileName: fileName}, function(result){
+              console.log(result);
+              if(result === true){
+                  targetDiv.remove();
+              }
+          });
+      });
+
+  </script>
+
+</body>
+</html>

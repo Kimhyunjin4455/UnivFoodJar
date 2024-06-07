@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<th:block th:replace="~{/layout/basic :: setContent(~{this::content})}">
+  <th:block th:fragment="content">
+    <div style="margin-top: 40px; margin-bottom: 40px;">
+    <h1 class="mt-4" align="center"> 우리 대학 맛집 추천 리스트!!!
+      <span>
+        <a th:href="@{/univFood/register}">
+          <button type="button" class="btn btn-outline-primary">게시글 등록</button>
+        </a>
+      </span>
+    </h1>
+    </div>
+
+    <form action="/univFood/list" method="get" id="searchForm">
+      <input type="hidden" name="page" value="1">
+    </form>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">글번호</th>
+          <th scope="col">가게명 & 대표이미지</th>
+          <th scope="col">대표 메뉴</th>
+          <th scope="col">리뷰 갯수</th>
+          <th scope="col">평점</th>
+<!--          <th scope="col">연락처</th>-->
+<!--          <th scope="col">위치</th>-->
+          <th scope="col">등록일</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      <tr th:each="dto : ${result.dtoList}">
+        <th scope="row">
+          <a th:href="@{/univFood/read(uno = ${dto.uno}, page = ${result.page})}">
+            [[${dto.uno}]]
+          </a>
+        <td>
+          <img th:if="${dto.imageDTOList.size() > 0 && dto.imageDTOList[0].path != null }"
+               th:src="|/display?fileName=${dto.imageDTOList[0].getThumbnailURL()}|"><br>&emsp;&emsp;&emsp;&emsp;[[${dto.restaurantName}]]
+        </td>
+        <td><b>[[${dto.signatureMenu}]]</b></td>
+
+        <td><b>&emsp;&ensp;[[${dto.reviewCnt}]]</b></td>
+        <td><b>&nbsp;[[${dto.avg}]]</b></td>
+<!--        <td><b>[[${dto.contact}]]</b></td>-->
+<!--        <td><b>[[${dto.address}]]</b></td>-->
+
+<!--        <td><b>[[${dto.reviewCnt}]]</b></td>-->
+<!--        <td><b>[[${dto.avg}]]</b></td>-->
+<!--        <td><b>[[${dto.contact}]]</b></td>-->
+<!--        <td><b>[[${dto.address}]]</b></td>-->
+
+        <td>[[${#temporals.format(dto.regDate, 'yyyy/MM/dd')}]]</td>
+        </th>
+      </tr>
+      </tbody>
+
+    </table>
+
+    <ul class="pagination h-100 justify-content-center align-items-center">
+      <li class="page-item " th:if="${result.prev}">
+        <a class="page-link" th:href="@{/univFood/list(page= ${result.start-1})}" tabindex="-1">이전</a>
+      </li>
+
+      <li th:class=" 'page-item' + ${result.page == page?'active':''}" th:each="page: ${result.pageList}">
+        <a class="page-link" th:href="@{/univFood/list(page= ${page})}">[[${page}]]</a>
+      </li>
+
+      <li class="page-item " th:if="${result.next}">
+        <a class="page-link" th:href="@{/univFood/list(page= ${result.end+1})}">다음</a>
+      </li>
+    </ul>
+
+
+    <style>
+      p{
+        text-align: center;
+      }
+    </style>
+
+
+    <script th:inline="javascript">
+
+    </script>
+  </th:block>
+</th:block>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+</html>
