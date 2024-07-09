@@ -1,5 +1,7 @@
 package org.zerock.univFoodJar.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -15,11 +17,12 @@ import java.util.List;
 @RequestMapping("/reviews")
 @Log4j2
 @RequiredArgsConstructor
-
+@Tag(name = "ReviewController", description = "댓글 관련 API")
 public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/{uno}/all")
+    @Operation(summary = "댓글 조회", description = "댓글 목록을 반환합니다.")
     public ResponseEntity<List<ReviewDTO>> getList(@PathVariable("uno") Long uno){
         log.info("---------------list----------------");
         log.info("UNO: " + uno);
@@ -29,6 +32,7 @@ public class ReviewController {
     }
 
     @PostMapping("/{uno}")
+    @Operation(summary = "댓글 추가", description = "새로운 댓글을 추가합니다.")
     public ResponseEntity<Long> addReview(@RequestBody ReviewDTO univFoodReveiwDTO){
         log.info("---------------add UnivFoodReview----------------");
         log.info("reviewDTO: " + univFoodReveiwDTO);
@@ -39,6 +43,7 @@ public class ReviewController {
     }
 
     @PutMapping("/{uno}/{reviewnum}")
+    @Operation(summary = "댓글 수정", description = "기존 댓글을 수정합니다.")
     public ResponseEntity<Long> modifyReview(@PathVariable Long reviewnum
                                             ,@RequestBody ReviewDTO univFoodReviewDTO){
         log.info("--------------modify UnivFoodReview----------------");
@@ -50,6 +55,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{uno}/{reviewnum}")
+    @Operation(summary = "댓글 삭제", description = "기존 댓글을 삭제합니다.")
     public ResponseEntity<Long> removeReview(@PathVariable Long reviewnum){
         log.info("--------------modify removeReview-------------------");
         log.info("reviewnum: "  + reviewnum);
