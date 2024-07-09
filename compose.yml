@@ -1,0 +1,30 @@
+services:
+  my-exserver:
+    # 아래의 build는 도커파일을 위치한 경로를 작성하면 그 파일을 기반으로 컨테이너 실행, compose.yml과 Dockerfile은 같은 경로라 .으로 작성
+    build: .
+    ports:
+      - 8080:8080
+    depends_on:
+      - my-db #:a
+        # condition: service_healthy #
+    volumes:
+      - ./uploads:/uploads
+
+
+  my-db:
+    image: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: 12349576
+      MARIADB_USER: dp4455
+      MARIADB_PASSWORD: dp6759
+      MARIADB_DATABASE: univfoodDocker
+    volumes:
+      - ./mariadb_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping"]
+#      interval: 5s
+#      retries: 10
+
+
