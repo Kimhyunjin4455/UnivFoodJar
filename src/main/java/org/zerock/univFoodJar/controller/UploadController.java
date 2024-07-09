@@ -1,5 +1,9 @@
 package org.zerock.univFoodJar.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.log4j.Log4j2;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,12 +33,19 @@ import java.util.UUID;
 
 @RestController
 @Log4j2
+@Tag(name = "파일 업로드 컨트롤러", description = "파일 업로드 컨트롤 관련 api")
 public class UploadController {
 
     @Value("${org.zerock.upload.path}") // application.properties의 변수
     private String uploadPath;
 
     @PostMapping("/uploadAjax")
+    @Operation(summary = "파일 업로드", description = "여러 개의 이미지 파일을 업로드하여 섬네일을 생성합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "업로드 성공"),
+            @ApiResponse(responseCode = "403", description = "이미지 파일이 아님"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     public ResponseEntity<List<UploadResultDTO>> uploadFile(MultipartFile[] uploadFiles){    // 동시에 여러 개의 파일 정보 처리 위해 MultipartFile[]
     // 업로드 결과 반환하기 위해 ResponseEntity 이용하여 처리
         List<UploadResultDTO> resultDTOList = new ArrayList<>();
@@ -89,6 +100,11 @@ public class UploadController {
     // 브라우저에서 링크를 통해 <img>태그 후가 + 해당URL이 호출되는 경우 서버에서 이미지 파일 데이터를 브라우저로 전송
     // 이를 위해 '/display?fileName=xx'와 같은 URL 호출 시 이미지가 전송되도록 메서드 추가
     @GetMapping("/display")
+    @Operation(summary = "파일 표시", description = "원본 파일 이름을 기반으로 섬네을를 표시합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파일 전송 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     public ResponseEntity<byte[]> getFile(String fileName, String size){
         // size 파라미터는 원본 파일인지 섬네일인지 구분하기 위한 것(값이 1인 경우 원본 파일 전송)
         ResponseEntity<byte[]> result = null;
@@ -124,6 +140,11 @@ public class UploadController {
     // 브라우저에 업로드된 결과 중 UploadResultDTO의 getImageURL()을 통한 imageURL 속성이 있음
 
     @PostMapping("/removeFile")
+    @Operation(summary = "파일 삭제", description = "원본 파일 이름을 기반으로 원본과 섬네일을 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "파일 삭제 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     public ResponseEntity<Boolean> removeFile(String fileName){
         // 원본 파일의 이름을 파라미터로 받아, File 객체를 이용해 원본과 섬네일을 같이 삭제
         String srcFileName = null;
