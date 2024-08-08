@@ -31,10 +31,10 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
                 .requestMatchers( "/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/upload/**", "/display/**").permitAll()
-                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers( "/univFood", "/univFood/", "/univFood/list", "/univFood/read", "/reviews/**").permitAll()
                         // 괄호내의 경로로 들어오면 뒤의 권한으로 권한 심사, permitAll 이므로 모두 허용
                         .requestMatchers("/univFood/register", "/univFood/modify", "/univFood/delete").hasRole("USER")
+                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated())
         .formLogin(formLogin -> formLogin
                 .loginPage("/login")

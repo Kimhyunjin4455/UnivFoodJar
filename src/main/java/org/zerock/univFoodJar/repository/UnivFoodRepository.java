@@ -15,13 +15,13 @@ public interface UnivFoodRepository extends JpaRepository<UnivFood, Long> {
     // UnivFood객체, UnivFoodImage객체, double 값으로 나오는 식당의 평점, Lond타입 리뷰 개수를 Object[]로 반환
     @Query("select u, ui, avg(coalesce(r.grade,0)), count(distinct(r)) from UnivFood u "
             +"left outer join UnivFoodImage ui on ui.univFood = u "
-            +"left outer join Review r on r.univFood = u group by u")
+            +"left outer join Review r on r.univFood = u group by u, ui")
     Page<Object[]> getListPage(Pageable pageable);
 
     @Query("select u, ui, avg(coalesce(r.grade,0)), count(distinct(r)) "
             +"from UnivFood u left outer join UnivFoodImage ui on ui.univFood = u "
             +"left outer join Review r on r.univFood = u "
-            +"where u.uno = :uno group by ui")
+            +"where u.uno = :uno group by u, ui")
     List<Object[]> getUnivFoodWithAll(Long uno); // 특정 음식점 조회
 
     @Transactional
